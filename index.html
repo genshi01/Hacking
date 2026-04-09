@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localhost Load Test Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 { color: #2c3e50; text-align: center; font-size: 1.5rem; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:disabled { background-color: #bdc3c7; }
+        button:hover:not(:disabled) { background-color: #2980b9; }
+        
+        #results {
+            margin-top: 25px;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            display: none;
+        }
+        .stat { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .stat b { color: #2c3e50; }
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: none;
+        }
+        #progress-fill {
+            height: 100%;
+            background: #2ecc71;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .warning { color: #e74c3c; font-size: 0.8rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 Localhost Load Test</h1>
+    
+    <div class="input-group">
+        <label>Target URL</label>
+        <input type="text" id="url" value="http://localhost:3000" placeholder="http://localhost:port/...">
+        <div class="warning">* Trình duyệt chỉ cho phép test localhost nếu server bật CORS.</div>
+    </div>
+
+    <div class="input-group">
+        <label>Thời gian chạy (giây)</label>
+        <input type="number" id="duration" value="10">
+    </div>
+
+    <div class="input-group">
+        <label>Requests Per Second (RPS)</label>
+        <input type="number" id="rps" value="50">
+    </div>
+
+    <button id="startBtn">Bắt đầu Test</button>
+
+    <div class="progress-bar" id="progress-bar">
+        <div id="progress-fill"></div>
+    </div>
+
+    <div id="results">
+        <div class="stat"><span>Trạng thái:</span> <b id="status">Đang chạy...</b></div>
+        <div class="stat"><span>Thành công (2xx):</span> <b id="ok">0</b></div>
+        <div class="stat"><span>Thất bại/Lỗi CORS:</span> <b id="err">0</b></div>
+        <div class="stat"><span>Thời gian thực tế:</span> <b id="elapsed">0s</b></div>
+        <hr>
+        <div class="stat"><span>P50 (Trung vị):</span> <b id="p50">-</b></div>
+        <div class="stat"><span>P95:</span> <b id="p95">-</b></div>
+    </div>
+</div>
+
+<script>
+    // --- WORKER CODE (Xử lý đa luồng để không treo UI) ---
+    const workerCode = `
+        self.onmessage = async function(e) {
+            const { url, rps, duration } = e.data;
+            const startTime = performance.now();
+            const stopTime = startTime + (duration * 1000);
+            
+            let ok = 0, err = 0;
+            let latencies = [];
+            const interval = 1000 / rps;
+
+            async function sendRequest() {
+                const t0 = performance.now();
+                try {
+                    // Sử dụng mode no-cors để gửi được nhiều request hơn 
+                    // nhưng sẽ không đọc được nội dung response chi tiết
+                    const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                    const dt = performance.now() - t0;
+                    latencies.push(dt);
+                    ok++;
+                } catch (e) {
+                    err++;
+                }
+            }
+
+            const timer = setInterval(() => {
+                if (performance.now() >= stopTime) {
+                    clearInterval(timer);
+                    self.postMessage({ type: 'DONE', ok, err, latencies });
+                    return;
+                }
+                sendRequest();
+                // Gửi update sau mỗi 500ms
+                if (ok % 10 === 0) {
+                    self.postMessage({ type: 'UPDATE', ok, err, progress: (performance.now() - startTime) / (duration * 1000) * 100 });
+                }
+            }, interval);
+        };
+    `;
+
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(blob);
+    let worker;
+
+    const startBtn = document.getElementById('startBtn');
+    const progressFill = document.getElementById('progress-fill');
+    const progressBar = document.getElementById('progress-bar');
+
+    startBtn.onclick = () => {
+        const url = document.getElementById('url').value;
+        const duration = parseInt(document.getElementById('duration').value);
+        const rps = parseInt(document.getElementById('rps').value);
+
+        // Bảo mật: Kiểm tra localhost
+        if (!url.includes('localhost') && !url.includes('127.0.0.1')) {
+            alert("Chỉ được phép test trên localhost!");
+            return;
+        }
+
+        // Reset UI
+        startBtn.disabled = true;
+        document.getElementById('results').style.display = 'block';
+        progressBar.style.display = 'block';
+        document.getElementById('status').innerText = "Đang chạy...";
+        document.getElementById('ok').innerText = "0";
+        document.getElementById('err').innerText = "0";
+        
+        const startTime = performance.now();
+
+        if (worker) worker.terminate();
+        worker = new Worker(workerUrl);
+
+        worker.postMessage({ url, rps, duration });
+
+        worker.onmessage = (e) => {
+            const data = e.data;
+            if (data.type === 'UPDATE') {
+                document.getElementById('ok').innerText = data.ok;
+                document.getElementById('err').innerText = data.err;
+                progressFill.style.width = data.progress + '%';
+            } else if (data.type === 'DONE') {
+                const elapsed = (performance.now() - startTime) / 1000;
+                document.getElementById('status').innerText = "Hoàn thành";
+                document.getElementById('ok').innerText = data.ok;
+                document.getElementById('err').innerText = data.err;
+                document.getElementById('elapsed').innerText = elapsed.toFixed(2) + "s";
+                progressFill.style.width = '100%';
+                
+                // Tính Percentiles
+                const lat = data.latencies.sort((a, b) => a - b);
+                if (lat.length > 0) {
+                    document.getElementById('p50').innerText = lat[Math.floor(lat.length * 0.5)].toFixed(2) + " ms";
+                    document.getElementById('p95').innerText = lat[Math.floor(lat.length * 0.95)].toFixed(2) + " ms";
+                }
+                
+                startBtn.disabled = false;
+            }
+        };
+    };
+</script>
+
+</body>
+</html>
