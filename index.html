@@ -2,213 +2,522 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Localhost Load Test Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ANONYMOUS LOAD TEST · VÔ DANH TOOL</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
             display: flex;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
         }
+
+        /* ẩn hiệu ứng hacker matrix nhẹ */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,255,0,0.02) 0px, rgba(0,255,0,0.02) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 720px;
             width: 100%;
-            max-width: 600px;
+            background: rgba(10, 20, 18, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid #2ecc71;
+            border-radius: 32px;
+            box-shadow: 0 0 28px rgba(46, 204, 113, 0.3), 0 8px 20px rgba(0,0,0,0.6);
+            padding: 28px 24px 32px;
+            transition: all 0.2s;
+            z-index: 2;
         }
-        h1 { color: #2c3e50; text-align: center; font-size: 1.5rem; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
-        input {
+
+        /* header anonymous style */
+        .hacker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #2ecc71;
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mask-icon {
+            background: #1f2a1b;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2ecc71;
+            box-shadow: 0 0 12px #2ecc71;
+        }
+        .mask-icon svg {
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 0 3px #2ecc71);
+        }
+        .title-text h1 {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            color: #2ecc71;
+            text-shadow: 0 0 6px #1f9a4a;
+            font-weight: normal;
+        }
+        .title-text p {
+            color: #8bc34a;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+        .anonymous-badge {
+            background: #0e1a12;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #b0ffb0;
+            border: 1px solid #2ecc71;
+        }
+
+        /* input group */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #d0f0c0;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        label i {
+            color: #2ecc71;
+            font-style: normal;
+            font-weight: bold;
+        }
+        input, textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
+            background: #07100c;
+            border: 1px solid #2ecc71;
+            padding: 12px 14px;
+            border-radius: 16px;
+            color: #c3ffb2;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            outline: none;
+        }
+        input:focus, textarea:focus {
+            border-color: #5eff9e;
+            box-shadow: 0 0 10px #2ecc71;
+            background: #031008;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .warning {
+            color: #ffaa66;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .warning::before {
+            content: "⚠️";
         }
         button {
             width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
+            padding: 14px;
+            background: #0f2a1c;
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 1.2rem;
+            font-family: monospace;
+            border-radius: 40px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            backdrop-filter: blur(4px);
+            margin-top: 8px;
         }
-        button:disabled { background-color: #bdc3c7; }
-        button:hover:not(:disabled) { background-color: #2980b9; }
+        button:enabled {
+            background: #0e2a1a;
+            box-shadow: 0 0 8px #2ecc71;
+        }
+        button:enabled:hover {
+            background: #1b4d2e;
+            color: #ffffff;
+            border-color: #56ff9a;
+            text-shadow: 0 0 4px black;
+            cursor: pointer;
+        }
+        button:disabled {
+            opacity: 0.5;
+            border-color: #5a6e5e;
+            color: #7d9e7a;
+            cursor: not-allowed;
+        }
 
-        #results {
-            margin-top: 25px;
-            padding: 20px;
-            background: #ecf0f1;
-            border-radius: 8px;
-            display: none;
-        }
-        .stat { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .stat b { color: #2c3e50; }
         .progress-bar {
             height: 10px;
-            background: #eee;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            background: #1a2c22;
+            border-radius: 20px;
+            margin: 20px 0 15px;
             overflow: hidden;
             display: none;
         }
         #progress-fill {
             height: 100%;
-            background: #2ecc71;
+            background: linear-gradient(90deg, #2ecc71, #a0ff60);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.2s;
+            box-shadow: 0 0 6px #6eff8e;
         }
-        .warning { color: #e74c3c; font-size: 0.8rem; margin-top: 10px; }
+
+        #results {
+            margin-top: 25px;
+            background: #07100cee;
+            border-radius: 24px;
+            padding: 18px;
+            border: 1px solid #2ecc7144;
+            backdrop-filter: blur(4px);
+            display: none;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            border-bottom: 1px dotted #2ecc7122;
+            padding-bottom: 6px;
+        }
+        .stat span:first-child {
+            color: #99cc99;
+        }
+        .stat b {
+            color: #d4ffb0;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+        .glitch-text {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        hr {
+            border-color: #2ecc7133;
+            margin: 12px 0;
+        }
+        .urls-badge {
+            background: #00000055;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #bbffaa;
+            text-align: center;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.7rem;
+            color: #567a55;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>🚀 Localhost Load Test</h1>
-
-    <div class="input-group">
-        <label>Target URL</label>
-        <input type="text" id="url" value="http://localhost:3000" placeholder="http://localhost:port/...">
-        <div class="warning">* Trình duyệt chỉ cho phép test localhost nếu server bật CORS.</div>
+    <div class="hacker-header">
+        <div class="logo-area">
+            <div class="mask-icon">
+                <!-- Guy Fawkes / Anonymous mask SVG -->
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="44" fill="#1f2a1b" stroke="#2ecc71" stroke-width="1.8"/>
+                    <path d="M30 42 L38 38 L50 42 L62 38 L70 42 L68 58 L62 68 L50 72 L38 68 L32 58 L30 42Z" fill="#192f1c" stroke="#2ecc71" stroke-width="1.5"/>
+                    <ellipse cx="38" cy="50" rx="4" ry="5" fill="#2ecc71" stroke="#0a3a1a"/>
+                    <ellipse cx="62" cy="50" rx="4" ry="5" fill="#2ecc71" stroke="#0a3a1a"/>
+                    <path d="M44 60 L56 60 L50 66 L44 60Z" fill="#2ecc71"/>
+                    <path d="M35 35 L42 33 L50 36 L58 33 L65 35" stroke="#8bc34a" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+            <div class="title-text">
+                <h1>ANONYMOUS · LOAD TEST</h1>
+                <p>// we are legion · stress local target</p>
+            </div>
+        </div>
+        <div class="anonymous-badge">#VÔ DANH · TẤN CÔNG TỐC ĐỘ</div>
     </div>
 
     <div class="input-group">
-        <label>Thời gian chạy (giây)</label>
-        <input type="number" id="duration" value="10">
+        <label><i>🌐</i> TARGETS (Mỗi dòng 1 URL)</label>
+        <textarea id="targetsList" placeholder="http://localhost:3000&#10;http://127.0.0.1:8080/api&#10;http://localhost:5000"></textarea>
+        <div class="warning">* Chỉ giới hạn localhost/127.0.0.1. Server cần cho phép CORS (hoặc dùng mode no-cors)</div>
     </div>
 
     <div class="input-group">
-        <label>Requests Per Second (RPS)</label>
-        <input type="number" id="rps" value="50">
+        <label><i>⏱️</i> THỜI GIAN (giây)</label>
+        <input type="number" id="duration" value="10" min="2" max="60">
     </div>
 
-    <button id="startBtn">Bắt đầu Test</button>
+    <div class="input-group">
+        <label><i>⚡</i> REQUESTS PER SECOND (RPS)</label>
+        <input type="number" id="rps" value="45" min="5" max="200">
+    </div>
+
+    <button id="startBtn">▶ INITIATE STRESS TEST</button>
 
     <div class="progress-bar" id="progress-bar">
         <div id="progress-fill"></div>
     </div>
 
     <div id="results">
-        <div class="stat"><span>Trạng thái:</span> <b id="status">Đang chạy...</b></div>
-        <div class="stat"><span>Thành công (2xx):</span> <b id="ok">0</b></div>
-        <div class="stat"><span>Thất bại/Lỗi CORS:</span> <b id="err">0</b></div>
-        <div class="stat"><span>Thời gian thực tế:</span> <b id="elapsed">0s</b></div>
+        <div class="stat"><span>🔥 TRẠNG THÁI:</span> <b id="status">Chờ lệnh ...</b></div>
+        <div class="stat"><span>✅ THÀNH CÔNG (2xx / no-cors):</span> <b id="ok">0</b></div>
+        <div class="stat"><span>❌ THẤT BẠI / LỖI:</span> <b id="err">0</b></div>
+        <div class="stat"><span>⏱️ THỜI GIAN THỰC:</span> <b id="elapsed">0s</b></div>
         <hr>
-        <div class="stat"><span>P50 (Trung vị):</span> <b id="p50">-</b></div>
-        <div class="stat"><span>P95:</span> <b id="p95">-</b></div>
+        <div class="stat"><span>📊 P50 (TRUNG VỊ):</span> <b id="p50">-- ms</b></div>
+        <div class="stat"><span>📈 P95:</span> <b id="p95">-- ms</b></div>
+        <div class="urls-badge" id="targetCountBadge">🎯 đang quét target ...</div>
     </div>
+    <div class="footer-note">[ anonymous load testing tool · local only · ethical stress ]</div>
 </div>
 
 <script>
-    // --- WORKER CODE (Xử lý đa luồng để không treo UI) ---
+    // Worker code cải tiến: nhận nhiều url và luân phiên request theo round-robin
     const workerCode = `
         self.onmessage = async function(e) {
-            const { url, rps, duration } = e.data;
+            const { urls, rps, duration } = e.data;
+            if (!urls || urls.length === 0) {
+                self.postMessage({ type: 'ERROR', msg: 'No valid URLs' });
+                return;
+            }
+            
             const startTime = performance.now();
             const stopTime = startTime + (duration * 1000);
-            
             let ok = 0, err = 0;
             let latencies = [];
-            const interval = 1000 / rps;
-
-            async function sendRequest() {
+            const intervalMs = 1000 / rps;
+            let urlIndex = 0;
+            
+            // hàm gửi request tới url theo vòng
+            async function sendOneRequest() {
+                const targetUrl = urls[urlIndex % urls.length];
+                urlIndex++;
                 const t0 = performance.now();
                 try {
-                    // Sử dụng mode no-cors để gửi được nhiều request hơn 
-                    // nhưng sẽ không đọc được nội dung response chi tiết
-                    const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                    // sử dụng HEAD + no-cors để tối ưu, vẫn nhận được thời gian phản hồi
+                    await fetch(targetUrl, { 
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        cache: 'no-store',
+                        headers: { 'X-Requested-With': 'AnonymousStress' }
+                    });
                     const dt = performance.now() - t0;
                     latencies.push(dt);
                     ok++;
-                } catch (e) {
+                } catch (error) {
+                    // lỗi mạng, CORS block, không reachable -> vẫn tính fail
                     err++;
                 }
             }
-
-            const timer = setInterval(() => {
-                if (performance.now() >= stopTime) {
-                    clearInterval(timer);
+            
+            let intervalId = setInterval(() => {
+                const now = performance.now();
+                if (now >= stopTime) {
+                    clearInterval(intervalId);
                     self.postMessage({ type: 'DONE', ok, err, latencies });
                     return;
                 }
-                sendRequest();
-                // Gửi update sau mỗi 500ms
-                if (ok % 10 === 0) {
-                    self.postMessage({ type: 'UPDATE', ok, err, progress: (performance.now() - startTime) / (duration * 1000) * 100 });
+                sendOneRequest();
+                // gửi cập nhật mỗi 200ms để mượt
+                if ((ok + err) % 8 === 0) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(100, (elapsed / (duration * 1000)) * 100);
+                    self.postMessage({ type: 'UPDATE', ok, err, progress });
                 }
-            }, interval);
+            }, intervalMs);
         };
     `;
-
+    
     const blob = new Blob([workerCode], { type: 'application/javascript' });
     const workerUrl = URL.createObjectURL(blob);
-    let worker;
-
+    let activeWorker = null;
+    
+    // DOM elements
     const startBtn = document.getElementById('startBtn');
     const progressFill = document.getElementById('progress-fill');
     const progressBar = document.getElementById('progress-bar');
-
+    const resultsDiv = document.getElementById('results');
+    const statusSpan = document.getElementById('status');
+    const okSpan = document.getElementById('ok');
+    const errSpan = document.getElementById('err');
+    const elapsedSpan = document.getElementById('elapsed');
+    const p50Span = document.getElementById('p50');
+    const p95Span = document.getElementById('p95');
+    const targetCountBadge = document.getElementById('targetCountBadge');
+    
+    // helper: parse urls từ textarea, validate localhost/127.0.0.1
+    function parseTargetUrls(rawText) {
+        const lines = rawText.split(/\r?\n/);
+        const validUrls = [];
+        for (let line of lines) {
+            let url = line.trim();
+            if (url === "") continue;
+            // kiểm tra protocol mặc định http nếu thiếu
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'http://' + url;
+            }
+            try {
+                const urlObj = new URL(url);
+                const hostname = urlObj.hostname;
+                // chỉ cho phép localhost / 127.0.0.1 / ::1 (chặn an toàn)
+                if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+                    validUrls.push(url);
+                } else {
+                    console.warn("Bỏ qua url không localhost:", url);
+                }
+            } catch(e) {
+                console.warn("URL không hợp lệ:", url);
+            }
+        }
+        return validUrls;
+    }
+    
+    // reset giao diện
+    function resetUI() {
+        okSpan.innerText = "0";
+        errSpan.innerText = "0";
+        elapsedSpan.innerText = "0s";
+        p50Span.innerText = "-- ms";
+        p95Span.innerText = "-- ms";
+        statusSpan.innerText = "⚙️ KHỞI TẠO ...";
+        progressFill.style.width = "0%";
+    }
+    
     startBtn.onclick = () => {
-        const url = document.getElementById('url').value;
-        const duration = parseInt(document.getElementById('duration').value);
-        const rps = parseInt(document.getElementById('rps').value);
-
-        // Bảo mật: Kiểm tra localhost
-        if (!url.includes('localhost') && !url.includes('127.0.0.1')) {
-            alert("Chỉ được phép test trên localhost!");
+        // lấy và validate
+        const rawTargets = document.getElementById('targetsList').value;
+        let targets = parseTargetUrls(rawTargets);
+        
+        if (targets.length === 0) {
+            alert("[!] KHÔNG CÓ TARGET HỢP LỆ! Chỉ chấp nhận localhost hoặc 127.0.0.1\nVí dụ: http://localhost:3000");
             return;
         }
-
-        // Reset UI
-        startBtn.disabled = true;
-        document.getElementById('results').style.display = 'block';
+        
+        const durationSec = parseInt(document.getElementById('duration').value);
+        const rps = parseInt(document.getElementById('rps').value);
+        
+        if (isNaN(durationSec) || durationSec < 1) {
+            alert("Thời gian không hợp lệ");
+            return;
+        }
+        if (isNaN(rps) || rps < 1) {
+            alert("RPS không hợp lệ");
+            return;
+        }
+        
+        // Hiển thị badge danh sách target
+        targetCountBadge.innerText = `🎯 ${targets.length} target(s) được tấn công: ${targets.map(t => {
+            try { return new URL(t).hostname; } catch(e) { return "?"; }
+        }).join(', ')}`;
+        
+        // reset worker cũ nếu có
+        if (activeWorker) {
+            activeWorker.terminate();
+        }
+        
+        resetUI();
+        resultsDiv.style.display = 'block';
         progressBar.style.display = 'block';
-        document.getElementById('status').innerText = "Đang chạy...";
-        document.getElementById('ok').innerText = "0";
-        document.getElementById('err').innerText = "0";
-
-        const startTime = performance.now();
-
-        if (worker) worker.terminate();
-        worker = new Worker(workerUrl);
-
-        worker.postMessage({ url, rps, duration });
-
-        worker.onmessage = (e) => {
-            const data = e.data;
+        startBtn.disabled = true;
+        statusSpan.innerText = "🔥 ĐANG TẤN CÔNG ... (Anonymous Load Mode)";
+        
+        const globalStart = performance.now();
+        
+        // tạo worker mới
+        activeWorker = new Worker(workerUrl);
+        activeWorker.postMessage({ urls: targets, rps: rps, duration: durationSec });
+        
+        activeWorker.onmessage = (msgEv) => {
+            const data = msgEv.data;
             if (data.type === 'UPDATE') {
-                document.getElementById('ok').innerText = data.ok;
-                document.getElementById('err').innerText = data.err;
-                progressFill.style.width = data.progress + '%';
-            } else if (data.type === 'DONE') {
-                const elapsed = (performance.now() - startTime) / 1000;
-                document.getElementById('status').innerText = "Hoàn thành";
-                document.getElementById('ok').innerText = data.ok;
-                document.getElementById('err').innerText = data.err;
-                document.getElementById('elapsed').innerText = elapsed.toFixed(2) + "s";
+                okSpan.innerText = data.ok;
+                errSpan.innerText = data.err;
+                progressFill.style.width = Math.min(100, data.progress) + '%';
+            }
+            else if (data.type === 'DONE') {
+                const elapsedTime = (performance.now() - globalStart) / 1000;
+                elapsedSpan.innerText = elapsedTime.toFixed(2) + "s";
+                statusSpan.innerText = "✔️ HOÀN THÀNH · KẾT THÚC TẤN CÔNG";
+                okSpan.innerText = data.ok;
+                errSpan.innerText = data.err;
                 progressFill.style.width = '100%';
-
-                // Tính Percentiles
-                const lat = data.latencies.sort((a, b) => a - b);
-                if (lat.length > 0) {
-                    document.getElementById('p50').innerText = lat[Math.floor(lat.length * 0.5)].toFixed(2) + " ms";
-                    document.getElementById('p95').innerText = lat[Math.floor(lat.length * 0.95)].toFixed(2) + " ms";
+                
+                // tính percentile cho latencies
+                const latArr = data.latencies;
+                if (latArr && latArr.length > 0) {
+                    const sorted = [...latArr].sort((a,b) => a-b);
+                    const p50Val = sorted[Math.floor(sorted.length * 0.5)];
+                    const p95Val = sorted[Math.floor(sorted.length * 0.95)];
+                    p50Span.innerText = p50Val.toFixed(2) + " ms";
+                    p95Span.innerText = p95Val.toFixed(2) + " ms";
+                } else {
+                    p50Span.innerText = "N/A";
+                    p95Span.innerText = "N/A";
                 }
-
+                
                 startBtn.disabled = false;
+                activeWorker = null;
+            }
+            else if (data.type === 'ERROR') {
+                statusSpan.innerText = "⚠️ LỖI CẤU HÌNH WORKER";
+                startBtn.disabled = false;
+                activeWorker = null;
             }
         };
+        
+        activeWorker.onerror = (err) => {
+            console.error("Worker error", err);
+            statusSpan.innerText = "⚠️ WORKER CRASH · LIÊN HỆ QUẢN TRỊ";
+            startBtn.disabled = false;
+            progressBar.style.display = 'none';
+            activeWorker = null;
+        };
     };
+    
+    // thêm dòng target mặc định mẫu nếu textarea trống
+    window.addEventListener('load', () => {
+        const textarea = document.getElementById('targetsList');
+        if (!textarea.value.trim()) {
+            textarea.value = "http://localhost:3000\nhttp://127.0.0.1:8080";
+        }
+        targetCountBadge.innerText = "🎯 Chờ nhập target hợp lệ (localhost)";
+    });
 </script>
-
 </body>
 </html>
