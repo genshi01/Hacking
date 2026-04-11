@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Load Test Tool Pro - Professional HTTP/WebSocket Load Testing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a1a2e;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .header .subtitle {
+            color: #666;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1a1a2e;
+            border-left: 4px solid #667eea;
+            padding-left: 12px;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group label i {
+            width: 20px;
+            color: #667eea;
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', monospace;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 30px;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .results-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .results-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        /* Code */
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .stat-value { font-size: 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Load Test Tool Pro</h1>
+        <div class="subtitle">
+            <i class="fas fa-bolt"></i> Professional HTTP/HTTPS/WebSocket Load Testing | 
+            <i class="fas fa-tachometer-alt"></i> High Performance | 
+            <i class="fas fa-chart-bar"></i> Real-time Analytics
+        </div>
+    </div>
+
+    <!-- Configuration Card -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-cog"></i> Test Configuration</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label><i class="fas fa-link"></i> Target URL</label>
+                <input type="text" id="url" placeholder="https://example.com/api" value="https://httpbin.org/get">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-globe"></i> Mode</label>
+                <select id="mode">
+                    <option value="http">HTTP/HTTPS</option>
+                    <option value="ws">WebSocket</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-clock"></i> Duration (seconds)</label>
+                <input type="number" id="duration" value="30" min="1">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-rocket"></i> RPS (Requests/sec)</label>
+                <input type="number" id="rps" value="100" min="1">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-users"></i> Concurrency</label>
+                <input type="number" id="concurrency" value="50" min="1">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-microchip"></i> Workers (Processes)</label>
+                <input type="number" id="workers" value="4" min="1" max="16">
+            </div>
+        </div>
+
+        <!-- HTTP Specific Options -->
+        <div id="httpOptions" style="margin-top: 15px;">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><i class="fas fa-code-branch"></i> HTTP Method</label>
+                    <select id="method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="HEAD">HEAD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-file-alt"></i> Read Full Body</label>
+                    <select id="readBody">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tachometer-alt"></i> HTTP/2</label>
+                    <select id="http2">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-database"></i> Payload (JSON/Text)</label>
+                    <textarea id="payload" rows="2" placeholder='{"key": "value"}' style="resize: vertical;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- WebSocket Options -->
+        <div id="wsOptions" style="display: none; margin-top: 15px;">
+            <div class="form-group">
+                <label><i class="fas fa-comment"></i> WebSocket Message</label>
+                <input type="text" id="wsMessage" value="ping">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 15px;">
+            <label><i class="fas fa-shield-alt"></i> Proxy (optional)</label>
+            <input type="text" id="proxy" placeholder="http://proxy:port or leave empty">
+        </div>
+
+        <div class="form-group" style="margin-top: 15px;">
+            <label><i class="fas fa-heading"></i> Custom Headers (JSON format)</label>
+            <textarea id="headers" rows="2" placeholder='{"Authorization": "Bearer token", "X-Custom": "value"}' style="resize: vertical;"></textarea>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn"><i class="fas fa-play"></i> Start Test</button>
+            <button class="btn btn-danger" id="stopBtn" disabled><i class="fas fa-stop"></i> Stop</button>
+            <button class="btn btn-secondary" id="exportBtn"><i class="fas fa-download"></i> Export Report</button>
+        </div>
+    </div>
+
+    <!-- Live Stats -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalRequests">0</div>
+            <div class="stat-label">Total Requests</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="successCount">0</div>
+            <div class="stat-label">Success</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="errorCount">0</div>
+            <div class="stat-label">Errors</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="currentRps">0</div>
+            <div class="stat-label">Current RPS</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="avgLatency">0</div>
+            <div class="stat-label">Avg Latency (ms)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="dataTransferred">0</div>
+            <div class="stat-label">Data Transferred (KB)</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="card">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+        </div>
+    </div>
+
+    <!-- Percentiles Card -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-chart-line"></i> Percentile Analysis</div>
+        <div class="form-grid" id="percentiles">
+            <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <div class="stat-value" id="p50">0</div>
+                <div class="stat-label">p50 (ms)</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <div class="stat-value" id="p95">0</div>
+                <div class="stat-label">p95 (ms)</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                <div class="stat-value" id="p99">0</div>
+                <div class="stat-label">p99 (ms)</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <div class="stat-value" id="p999">0</div>
+                <div class="stat-label">p99.9 (ms)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-table"></i> Detailed Results</div>
+        <table class="results-table" id="resultsTable">
+            <thead>
+                <tr><th>Metric</th><th>Value</th></tr>
+            </thead>
+            <tbody id="resultsBody">
+                <tr><td colspan="2">No test run yet</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    class LoadTestEngine {
+        constructor() {
+            this.running = false;
+            this.results = {
+                totalRequests: 0,
+                success: 0,
+                errors: 0,
+                totalBytes: 0,
+                latencies: [],
+                startTime: null,
+                endTime: null
+            };
+            this.workers = [];
+        }
+
+        async runTest(config) {
+            this.running = true;
+            this.results = {
+                totalRequests: 0,
+                success: 0,
+                errors: 0,
+                totalBytes: 0,
+                latencies: [],
+                startTime: Date.now(),
+                endTime: null
+            };
+
+            const workerPromises = [];
+            const rpsPerWorker = Math.max(1, Math.floor(config.rps / config.workers));
+            const concurrencyPerWorker = Math.max(1, Math.floor(config.concurrency / config.workers));
+
+            for (let i = 0; i < config.workers; i++) {
+                workerPromises.push(this.runWorker(config, rpsPerWorker, concurrencyPerWorker));
+            }
+
+            // Progress update interval
+            const progressInterval = setInterval(() => {
+                if (!this.running) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+                this.updateUI();
+            }, 100);
+
+            await Promise.all(workerPromises);
+            clearInterval(progressInterval);
+            this.results.endTime = Date.now();
+            this.running = false;
+            this.updateUI(true);
+        }
+
+        async runWorker(config, rps, concurrency) {
+            const workerId = Math.random();
+            const stopTime = Date.now() + (config.duration * 1000);
+            const intervalMs = 1000 / rps;
+            let lastRequestTime = Date.now();
+
+            const workerPromises = [];
+            for (let i = 0; i < concurrency; i++) {
+                workerPromises.push(this.workerLoop(config, stopTime, intervalMs, workerId));
+            }
+            await Promise.all(workerPromises);
+        }
+
+        async workerLoop(config, stopTime, intervalMs, workerId) {
+            while (this.running && Date.now() < stopTime) {
+                const now = Date.now();
+                const waitTime = Math.max(0, intervalMs - (now - this.lastRequestTime?.[workerId] || 0));
+                if (waitTime > 0) await this.sleep(waitTime);
+                
+                this.lastRequestTime = this.lastRequestTime || {};
+                this.lastRequestTime[workerId] = Date.now();
+                
+                await this.makeRequest(config);
+            }
+        }
+
+        async makeRequest(config) {
+            const startTime = performance.now();
+            try {
+                let response;
+                const headers = config.headers ? JSON.parse(config.headers) : {};
+                
+                if (config.mode === 'http') {
+                    const fetchOptions = {
+                        method: config.method,
+                        headers: headers,
+                        cache: 'no-cache'
+                    };
+                    
+                    if (config.payload && (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH')) {
+                        fetchOptions.body = config.payload;
+                    }
+                    
+                    if (config.proxy) {
+                        // Note: Browser fetch doesn't support proxy directly
+                        console.warn('Proxy support limited in browser environment');
+                    }
+                    
+                    response = await fetch(config.url, fetchOptions);
+                    const data = config.readBody === 'true' ? await response.text() : null;
+                    const bytes = data ? data.length : 0;
+                    
+                    this.results.totalBytes += bytes;
+                } else if (config.mode === 'ws') {
+                    // WebSocket support
+                    const ws = new WebSocket(config.url);
+                    await new Promise((resolve, reject) => {
+                        ws.onopen = () => resolve();
+                        ws.onerror = reject;
+                        setTimeout(() => reject(new Error('WebSocket timeout')), 5000);
+                    });
+                    ws.send(config.wsMessage || 'ping');
+                    const message = await new Promise((resolve) => {
+                        ws.onmessage = (e) => resolve(e.data);
+                        setTimeout(() => resolve(null), 5000);
+                    });
+                    ws.close();
+                    this.results.totalBytes += (message ? message.length : 0);
+                }
+                
+                const latency = performance.now() - startTime;
+                this.results.latencies.push(latency);
+                this.results.success++;
+            } catch (error) {
+                this.results.errors++;
+                console.debug('Request error:', error);
+            }
+            this.results.totalRequests++;
+        }
+
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        calculatePercentiles(percentiles = [50, 95, 99, 99.9]) {
+            if (this.results.latencies.length === 0) {
+                return {50: 0, 95: 0, 99: 0, 99.9: 0};
+            }
+            const sorted = [...this.results.latencies].sort((a, b) => a - b);
+            const result = {};
+            for (let p of percentiles) {
+                const idx = Math.floor(sorted.length * p / 100);
+                result[p] = Math.round(sorted[Math.min(idx, sorted.length - 1)] * 100) / 100;
+            }
+            return result;
+        }
+
+        updateUI(final = false) {
+            const elapsed = (Date.now() - this.results.startTime) / 1000;
+            const currentRps = elapsed > 0 ? Math.round(this.results.totalRequests / elapsed) : 0;
+            const avgLatency = this.results.latencies.length > 0 ? 
+                Math.round(this.results.latencies.reduce((a,b) => a + b, 0) / this.results.latencies.length * 100) / 100 : 0;
+            const successRate = this.results.totalRequests > 0 ? 
+                (this.results.success / this.results.totalRequests * 100).toFixed(1) : 0;
+            const dataKB = Math.round(this.results.totalBytes / 1024);
+            const progress = final ? 100 : Math.min(100, Math.round((elapsed / (document.getElementById('duration').value || 30)) * 100));
+
+            document.getElementById('totalRequests').textContent = this.results.totalRequests;
+            document.getElementById('successCount').innerHTML = `${this.results.success} <span style="font-size:12px">(${successRate}%)</span>`;
+            document.getElementById('errorCount').innerHTML = `${this.results.errors} <span style="font-size:12px">(${(100-successRate).toFixed(1)}%)</span>`;
+            document.getElementById('currentRps').textContent = currentRps;
+            document.getElementById('avgLatency').textContent = avgLatency;
+            document.getElementById('dataTransferred').textContent = dataKB;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressBar').textContent = `${progress}%`;
+
+            const percentiles = this.calculatePercentiles();
+            document.getElementById('p50').textContent = percentiles[50];
+            document.getElementById('p95').textContent = percentiles[95];
+            document.getElementById('p99').textContent = percentiles[99];
+            document.getElementById('p999').textContent = percentiles[99.9];
+
+            if (final) {
+                const resultsBody = document.getElementById('resultsBody');
+                resultsBody.innerHTML = `
+                    <tr><td><strong>Total Duration</strong></td><td>${((this.results.endTime - this.results.startTime)/1000).toFixed(1)}s</td></tr>
+                    <tr><td><strong>Total Requests</strong></td><td>${this.results.totalRequests}</td></tr>
+                    <tr><td><strong>Success Rate</strong></td><td><span class="badge badge-success">${successRate}%</span></td></tr>
+                    <tr><td><strong>Average RPS</strong></td><td>${Math.round(this.results.totalRequests / ((this.results.endTime - this.results.startTime)/1000))}</td></tr>
+                    <tr><td><strong>Average Latency</strong></td><td>${avgLatency} ms</td></tr>
+                    <tr><td><strong>Min Latency</strong></td><td>${this.results.latencies.length > 0 ? Math.min(...this.results.latencies).toFixed(2) : 0} ms</td></tr>
+                    <tr><td><strong>Max Latency</strong></td><td>${this.results.latencies.length > 0 ? Math.max(...this.results.latencies).toFixed(2) : 0} ms</td></tr>
+                    <tr><td><strong>Total Data Transferred</strong></td><td>${dataKB} KB (${(this.results.totalBytes/1024/1024).toFixed(2)} MB)</td></tr>
+                    <tr><td><strong>p50 Latency</strong></td><td>${percentiles[50]} ms</td></tr>
+                    <tr><td><strong>p95 Latency</strong></td><td>${percentiles[95]} ms</td></tr>
+                    <tr><td><strong>p99 Latency</strong></td><td>${percentiles[99]} ms</td></tr>
+                    <tr><td><strong>p99.9 Latency</strong></td><td>${percentiles[99.9]} ms</td></tr>
+                `;
+            }
+        }
+
+        exportReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    totalRequests: this.results.totalRequests,
+                    success: this.results.success,
+                    errors: this.results.errors,
+                    successRate: this.results.totalRequests > 0 ? (this.results.success / this.results.totalRequests * 100).toFixed(2) : 0,
+                    totalBytes: this.results.totalBytes,
+                    duration: this.results.endTime && this.results.startTime ? (this.results.endTime - this.results.startTime)/1000 : 0
+                },
+                performance: this.calculatePercentiles([50, 90, 95, 99, 99.9, 100]),
+                latencies: this.results.latencies.slice(0, 1000) // Sample for large datasets
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `loadtest_report_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        stop() {
+            this.running = false;
+        }
+    }
+
+    // UI Controller
+    const engine = new LoadTestEngine();
+    
+    document.getElementById('mode').addEventListener('change', (e) => {
+        const isWs = e.target.value === 'ws';
+        document.getElementById('httpOptions').style.display = isWs ? 'none' : 'block';
+        document.getElementById('wsOptions').style.display = isWs ? 'block' : 'none';
+    });
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
+        const config = {
+            url: document.getElementById('url').value,
+            mode: document.getElementById('mode').value,
+            duration: parseInt(document.getElementById('duration').value),
+            rps: parseInt(document.getElementById('rps').value),
+            concurrency: parseInt(document.getElementById('concurrency').value),
+            workers: Math.min(parseInt(document.getElementById('workers').value), 8), // Browser limit
+            method: document.getElementById('method').value,
+            readBody: document.getElementById('readBody').value,
+            http2: document.getElementById('http2').value === 'true',
+            payload: document.getElementById('payload').value,
+            wsMessage: document.getElementById('wsMessage').value,
+            proxy: document.getElementById('proxy').value,
+            headers: document.getElementById('headers').value
+        };
+
+        if (!config.url) {
+            alert('Please enter a target URL');
+            return;
+        }
+
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+        
+        await engine.runTest(config);
+        
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+        engine.stop();
+        document.getElementById('stopBtn').disabled = true;
+        document.getElementById('startBtn').disabled = false;
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        engine.exportReport();
+    });
+</script>
+</body>
+</html>
